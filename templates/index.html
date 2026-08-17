@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block titulo %}IFFagle{% endblock %}
+
+{% block conteudo %}
+<div class="flex flex-col items-center text-center px-4 mt-[12vh]">
+    <h1 class="text-6xl font-normal mb-8 tracking-tight">
+        <span class="text-blue-600">IFF</span><span class="text-gray-600">agle</span>
+    </h1>
+
+    <form action="{{ url_for('buscar') }}" method="get"
+          class="flex flex-col items-center gap-4 w-full max-w-xl">
+        <input
+            type="text"
+            name="q"
+            class="w-full px-5 py-3 text-base border border-gray-200 rounded-full outline-none focus:shadow-md focus:border-gray-200"
+            placeholder="Pesquisar arquivos indexados..."
+            autofocus
+            required
+        >
+
+        <div class="flex gap-4 text-sm text-gray-600">
+            <label class="flex items-center gap-1"><input type="radio" name="tipo" value="todos" checked> Tudo</label>
+            <label class="flex items-center gap-1"><input type="radio" name="tipo" value="imagem"> Imagens</label>
+            <label class="flex items-center gap-1"><input type="radio" name="tipo" value="documento"> Documentos</label>
+        </div>
+
+        <button type="submit"
+                class="bg-gray-100 border border-gray-100 rounded px-4 py-2.5 text-sm text-gray-700 hover:border-gray-300">
+            Pesquisar no IFFagle
+        </button>
+    </form>
+
+    <div class="mt-10 text-[13px] text-gray-600">
+        {% if indexador.pasta_indexada %}
+            <p>
+                Pasta indexada: <code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ indexador.pasta_indexada }}</code><br>
+                {{ indexador.total_arquivos }} arquivo(s) indexado(s)
+                ({{ indexador.total_imagens }} imagem(ns), {{ indexador.total_documentos }} documento(s))
+            </p>
+        {% else %}
+            <p>
+                Nenhuma pasta indexada ainda.
+                <a href="{{ url_for('indexar') }}" class="text-blue-600 hover:underline">Clique aqui para indexar uma pasta</a>.
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

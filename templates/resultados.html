@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block titulo %}{{ termo }} &middot; IFFagle{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-3xl mx-auto my-6 px-4">
+    <form action="{{ url_for('buscar') }}" method="get" class="flex flex-row items-center gap-4 mb-4">
+        <a href="{{ url_for('home') }}" class="text-[22px] font-bold text-blue-600 whitespace-nowrap">IFFagle</a>
+        <input type="text" name="q" value="{{ termo }}"
+               class="flex-1 px-5 py-2.5 border border-gray-200 rounded-full outline-none focus:shadow-md focus:border-gray-200"
+               required>
+        <button type="submit"
+                class="bg-gray-100 border border-gray-100 rounded px-3.5 py-2 text-sm text-gray-700 hover:border-gray-300">
+            Pesquisar
+        </button>
+    </form>
+
+    <div class="flex gap-5 border-b border-gray-200 mb-4 text-sm">
+        <a href="{{ url_for('buscar', q=termo, tipo='todos') }}"
+           class="py-2 px-1 {{ 'text-blue-600 border-b-2 border-blue-600' if tipo == 'todos' else 'text-gray-600' }}">Tudo</a>
+        <a href="{{ url_for('buscar', q=termo, tipo='imagem') }}"
+           class="py-2 px-1 {{ 'text-blue-600 border-b-2 border-blue-600' if tipo == 'imagem' else 'text-gray-600' }}">Imagens</a>
+        <a href="{{ url_for('buscar', q=termo, tipo='documento') }}"
+           class="py-2 px-1 {{ 'text-blue-600 border-b-2 border-blue-600' if tipo == 'documento' else 'text-gray-600' }}">Documentos</a>
+    </div>
+
+    {% if erro %}
+        <div class="mb-2 rounded px-4 py-2.5 text-sm border bg-red-50 text-red-700 border-red-200">{{ erro }}</div>
+    {% elif not resultados %}
+        <p class="text-gray-600">Nenhum resultado encontrado para "<strong>{{ termo }}</strong>".</p>
+    {% else %}
+        <p class="text-[13px] text-gray-600 mb-4">{{ resultados|length }} resultado(s) para "{{ termo }}"</p>
+
+        <ul class="space-y-6">
+            {% for r in resultados %}
+                <li>
+                    <a href="{{ url_for('abrir_arquivo', caminho=r.caminho) }}" target="_blank"
+                       class="text-lg text-blue-600 hover:underline">
+                        {{ r.nome }}
+                    </a>
+                    <div class="text-[13px] text-green-700 my-0.5">{{ r.caminho }}</div>
+
+                    {% if r.tipo == "imagem" %}
+                        <div class="text-sm text-gray-600">
+                            {% if r.metadados.largura %}
+                                {{ r.metadados.largura }}x{{ r.metadados.altura }} px &middot;
+                            {% endif %}
+                            {{ r.metadados.formato or "?" }} &middot;
+                            {{ (r.tamanho_bytes / 1024) | round(1) }} KB
+                        </div>
+                    {% else %}
+                        <div class="text-sm text-gray-600">
+                            {{ r.metadados.trecho or "" }}...
+                        </div>
+                    {% endif %}
+
+                    <div class="text-[11px] text-gray-400 mt-0.5">relevância: {{ "%.2f"|format(r.relevancia) }}</div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}

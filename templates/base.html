@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}IFFagle{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col font-sans text-gray-800 antialiased">
+    <nav class="flex justify-between items-center px-6 py-3 border-b border-gray-200">
+        <a href="{{ url_for('home') }}" class="text-xl font-bold text-blue-600">IFFagle</a>
+        <a href="{{ url_for('indexar') }}" class="text-sm text-gray-600 hover:underline">Indexar pasta</a>
+    </nav>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+            <div class="max-w-xl mx-auto mt-3 px-4 w-full">
+                {% for categoria, mensagem in mensagens %}
+                    <div class="mb-2 rounded px-4 py-2.5 text-sm border
+                        {% if categoria == 'sucesso' %}bg-green-50 text-green-700 border-green-200
+                        {% else %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                        {{ mensagem }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="flex-1">
+        {% block conteudo %}{% endblock %}
+    </main>
+</body>
+</html>

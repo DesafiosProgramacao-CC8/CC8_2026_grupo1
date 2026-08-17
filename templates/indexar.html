@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block titulo %}Indexar pasta &middot; IFFagle{% endblock %}
+
+{% block conteudo %}
+<div class="max-w-xl mx-auto my-14 px-4">
+    <h2 class="text-2xl font-normal mb-3">Indexar uma pasta</h2>
+    <p class="text-sm text-gray-600">
+        Informe o caminho completo de uma pasta do sistema operacional para
+        que o IFFagle percorra seus arquivos (e subpastas) e construa o
+        índice de busca.
+    </p>
+
+    <form action="{{ url_for('indexar') }}" method="post" class="flex items-center gap-2 mt-5">
+        <input
+            type="text"
+            id="pasta"
+            name="pasta"
+            class="flex-1 px-3.5 py-2.5 border border-gray-200 rounded text-sm outline-none focus:border-blue-500"
+            placeholder="/home/usuario/Documentos"
+            required
+        >
+        <button type="submit"
+                class="bg-gray-100 border border-gray-100 rounded px-4 py-2.5 text-sm text-gray-700 hover:border-gray-300">
+            Indexar
+        </button>
+    </form>
+
+    {% if indexador.pasta_indexada %}
+        <div class="mt-8 text-[13px] text-gray-600">
+            <p>
+                Última pasta indexada: <code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ indexador.pasta_indexada }}</code><br>
+                {{ indexador.total_arquivos }} arquivo(s)
+                ({{ indexador.total_imagens }} imagem(ns),
+                {{ indexador.total_documentos }} documento(s),
+                {{ indexador.total_ignorados }} ignorado(s))
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
