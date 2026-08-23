@@ -41,6 +41,8 @@ Como o sistema precisa manter índices separados para imagens e documentos, foi 
 
 - [x] Pesquisar imagens por metadados (largura, altura, formato); 
 > Códigos usados na busca por metadados
+
+
 | Campo | Valores Possíveis | O Que Representa |
 | :--- | :---: | :--- |
 | `tipo` | `jpg`, `jpeg`, `png` | Formato / extensão do arquivo de imagem |
@@ -51,6 +53,8 @@ Como o sistema precisa manter índices separados para imagens e documentos, foi 
 | `ano` | Ex: `2024`, `2025`, `2026` | Ano da ultima modificacao registrada no arquivo |
 
 > Termos de busca por metadados em busca livre
+
+
 | Metadado | Termos que Caem na Busca Livre |
 | :--- | :--- |
 | `formato` | `jpeg`, `png` *(nome do formato reportado pelo Pillow, sempre em minúsculo)* |
