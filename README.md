@@ -39,7 +39,29 @@ Como o sistema precisa manter índices separados para imagens e documentos, foi 
 
 > Os stubs `core/trees/base_index.py`, `core/trees/content_index.py`, `core/trees/file_name_index.py` e `core/models.py` foram removidos: nunca chegaram a ser implementados e a `Trie` (`core/trees/trie.py`) é a estrutura oficial do projeto.
 
+- [x] Pesquisar imagens por metadados (largura, altura, formato); 
+> Códigos usados na busca por metadados
+| Campo | Valores Possíveis | O Que Representa |
+| :--- | :---: | :--- |
+| `tipo` | `jpg`, `jpeg`, `png` | Formato / extensão do arquivo de imagem |
+| `orientacao` | `horizontal`, `vertical`, `quadrada` | Orientação espacial da imagem (largura vs. altura) |
+| `cor` | `colorida`, `pb` | Identificação do espaço de cor (colorida ou tons de cinza / preto e branco) |
+| `tamanho` | `grande`, `media`, `pequena` | Classificação por resolução:<br>• **Grande:** maior lado $\ge$ 1920px<br>• **Pequena:** maior lado $\le$ 400px<br>• **Média:** valores intermediários |
+| `peso` | `leve`, `moderada`, `pesada` | Tamanho do arquivo em disco:<br>• **Leve:** $< 100\text{ KB}$<br>• **Moderada:** $100\text{ KB} - 2\text{ MB}$<br>• **Pesada:** $> 2\text{ MB}$ |
+| `ano` | Ex: `2024`, `2025`, `2026` | Ano da ultima modificacao registrada no arquivo |
+
+> Termos de busca por metadados em busca livre
+| Metadado | Termos que Caem na Busca Livre |
+| :--- | :--- |
+| `formato` | `jpeg`, `png` *(nome do formato reportado pelo Pillow, sempre em minúsculo)* |
+| `dimensões` | • `{largura}x{altura}` (ex: `1920x1080`)<br>• Largura isolada (ex: `1920`)<br>• Altura isolada (ex: `1080`) |
+| `orientação` | • `paisagem`, `horizontal` *(se largura > altura)*<br>• `retrato`, `vertical` *(se altura > largura)*<br>• `quadrada` *(se largura == altura)* |
+| `porte` *(resolução)* | • `grande` *(maior lado $\ge$ 1920px)*<br>• `media` *(maior lado entre 400px e 1920px)*<br>• `pequena` *(maior lado $\le$ 400px)* |
+| `cor` | • Modo Pillow cru: `rgb`, `rgba`, `l`, `cmyk`, etc.<br>• Se P&B / cinza: `preta`, `branca`, `pb`, `bw`, `cinza`, `grayscale`<br>• Se colorida: `colorida`, `cor`, `color` |
+| `peso do arquivo` | • `leve` *(menor que 100 KB)*<br>• `moderada` *(entre 100 KB e 2 MB)*<br>• `pesada` *(maior que 2 MB)* |
+| `ano de modificação` | Ano numérico puro (ex: `2024`, `2025`, `2026`) |
+
+- [x] Contador `total_arquivos` conta também os arquivos ignorados (soma não bate com imagens + documentos) RESOLVIDO
+
 ### Pendentes
-- [ ] Pesquisar imagens por metadados (largura, altura, formato); hoje imagens só são encontradas pelo nome
-- [ ] Contador `total_arquivos` conta também os arquivos ignorados (soma não bate com imagens + documentos)
 - [ ] Relatório/documentação de todas as partes

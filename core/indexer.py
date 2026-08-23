@@ -2,7 +2,12 @@ import os
 import re
 from core.trees import IndicesArquivos
 from core.scanner import varrer_pasta, classificar_arquivo
-from core.extractors import extrair_metadados_imagem, extrair_dados_documento
+from core.extractors import (
+    extrair_metadados_imagem,
+    extrair_dados_documento,
+    gerar_termos_busca_imagem,
+    gerar_termos_por_campo_imagem,
+)
 from core.relevance import palavras_mais_comuns
 
 TOP_PALAVRAS_DOCUMENTO = 10
@@ -46,6 +51,12 @@ class Indexador:
 
                 if tipo == "imagem":
                     metadados = extrair_metadados_imagem(caminho)
+
+                    for termo in gerar_termos_busca_imagem(metadados):
+                        arvore.inserir(termo, caminho)
+
+                    for campo, valor in gerar_termos_por_campo_imagem(metadados):
+                        arvore.inserir(f"{campo}:{valor}", caminho)
                 else:
                     dados = extrair_dados_documento(caminho)
                     metadados = {

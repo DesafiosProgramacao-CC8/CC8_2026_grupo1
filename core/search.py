@@ -1,6 +1,31 @@
+import re
 from core.indexer import tokenizar
 
 BONUS_PALAVRA_EXATA = 1
+PADRAO_CAMPO = re.compile(r"^(\w+):(\S+)$")
+
+def extrair_termos_de_busca(termo):
+    termos = []
+    for pedaco in termo.strip().replace("+", " ").split():
+        casou = PADRAO_CAMPO.match(pedaco)
+        if casou:
+            campo, valor = casou.groups()
+            termos.append(f"{campo.lower()}:{valor.lower()}")
+        else:
+            termos.extend(tokenizar(pedaco))
+    return termos
+
+def _pontuar_termo(arvores, palavra):
+    pontos = {}
+
+    for arvore in arvores:
+        for caminho, frequencia in arvore.buscar_prefixo(palavra).items():
+            pontos[caminho] = pontos.get(caminho, 0) + frequencia
+
+        for caminho, frequencia in arvore.buscar(palavra).items():
+            pontos[caminho] = pontos.get(caminho, 0) + frequencia * BONUS_PALAVRA_EXATA
+
+    return pontos
 
 def buscar(indexador, termo, tipo):
     if tipo == "todos":
@@ -8,19 +33,21 @@ def buscar(indexador, termo, tipo):
     else:
         arvores = [indexador.indices.arvore_para_tipo(tipo)]
 
-    palavras = tokenizar(termo)
+    palavras = extrair_termos_de_busca(termo)
 
-    pontuacao = {}
+    if not palavras:
+        return []
 
-    for arvore in arvores:
-        for palavra in palavras:
-            #busca por prefixo
-            for caminho, frequencia in arvore.buscar_prefixo(palavra).items():
-                pontuacao[caminho] = pontuacao.get(caminho, 0) + frequencia
+    pontuacao_por_termo = [_pontuar_termo(arvores, palavra) for palavra in palavras]
 
-            #busca exata
-            for caminho, frequencia in arvore.buscar(palavra).items():
-                pontuacao[caminho] = pontuacao.get(caminho, 0) + frequencia * BONUS_PALAVRA_EXATA
+    caminhos_validos = set(pontuacao_por_termo[0])
+    for pontos_termo in pontuacao_por_termo[1:]:
+        caminhos_validos &= set(pontos_termo)
+
+    pontuacao = {
+        caminho: sum(pontos_termo.get(caminho, 0) for pontos_termo in pontuacao_por_termo)
+        for caminho in caminhos_validos
+    }
 
     resultados = []
 

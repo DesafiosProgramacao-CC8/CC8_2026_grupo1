@@ -35,8 +35,9 @@
         {% if indexador.pasta_indexada %}
             <p>
                 Pasta indexada: <code class="bg-gray-100 px-1.5 py-0.5 rounded">{{ indexador.pasta_indexada }}</code><br>
-                {{ indexador.total_arquivos }} arquivo(s) indexado(s)
-                ({{ indexador.total_imagens }} imagem(ns), {{ indexador.total_documentos }} documento(s))
+                {{ indexador.total_arquivos }} arquivo(s) encontrado(s)
+                ({{ indexador.total_imagens }} imagem(ns), {{ indexador.total_documentos }} documento(s)
+                indexado(s){% if indexador.total_ignorados %}, {{ indexador.total_ignorados }} ignorado(s){% endif %})
             </p>
         {% else %}
             <p>
