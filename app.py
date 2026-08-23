@@ -7,6 +7,7 @@ from core.indexer import Indexador
 from storage import persistence
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "42")
 
 indexador = persistence.carregar_indice() or Indexador()
 
@@ -32,15 +33,7 @@ def indexar():
             return redirect(url_for("indexar"))
 
         novo_indexador = Indexador()
-        try:
-            novo_indexador.indexar_pasta(pasta)
-        except NotImplementedError as e:
-            flash(
-                "A árvore de índice ainda não foi implementada pelo grupo "
-                f"(core/trees/*.py). Detalhe técnico: {e}",
-                "erro",
-            )
-            return redirect(url_for("indexar"))
+        novo_indexador.indexar_pasta(pasta)
 
         indexador = novo_indexador
         persistence.salvar_indice(indexador)
@@ -74,18 +67,10 @@ def buscar():
             erro="Nenhuma pasta foi indexada ainda.",
         )
 
-    try:
-        resultados = search_service.buscar(indexador, termo, tipo)
-        erro = None
-    except NotImplementedError as e:
-        resultados = []
-        erro = (
-            "A árvore de índice ainda não foi implementada pelo grupo "
-            f"(core/trees/*.py). Detalhe técnico: {e}"
-        )
+    resultados = search_service.buscar(indexador, termo, tipo)
 
     return render_template(
-        "resultados.html", termo=termo, tipo=tipo, resultados=resultados, erro=erro
+        "resultados.html", termo=termo, tipo=tipo, resultados=resultados, erro=None
     )
 
 

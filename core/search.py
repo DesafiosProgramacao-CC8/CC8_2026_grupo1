@@ -1,5 +1,7 @@
 from core.indexer import tokenizar
 
+BONUS_PALAVRA_EXATA = 1
+
 def buscar(indexador, termo, tipo):
     if tipo == "todos":
         arvores = [indexador.indices.arvore_imagens, indexador.indices.arvore_documentos]
@@ -12,10 +14,13 @@ def buscar(indexador, termo, tipo):
 
     for arvore in arvores:
         for palavra in palavras:
-            ocorrencias = arvore.buscar_prefixo(palavra)
-
-            for caminho, frequencia in ocorrencias.items():
+            #busca por prefixo
+            for caminho, frequencia in arvore.buscar_prefixo(palavra).items():
                 pontuacao[caminho] = pontuacao.get(caminho, 0) + frequencia
+
+            #busca exata
+            for caminho, frequencia in arvore.buscar(palavra).items():
+                pontuacao[caminho] = pontuacao.get(caminho, 0) + frequencia * BONUS_PALAVRA_EXATA
 
     resultados = []
 
