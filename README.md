@@ -31,8 +31,7 @@ Trabalho Integrador 1 · Desafios de Programação · Bacharelado em Ciência da
 7. [Cálculo da relevância](#cálculo-da-relevância)
 8. [Guia de uso dos filtros de metadados](#guia-de-uso-dos-filtros-de-metadados)
 9. [Limitações conhecidas](#limitações-conhecidas)
-10. [Requisitos do T1 e onde foram atendidos](#requisitos-do-t1-e-onde-foram-atendidos)
-11. [To-do list](#to-do-list)
+10. [Requisitos implementados](#requisitos-implementados)
 
 ## Introdução
 
