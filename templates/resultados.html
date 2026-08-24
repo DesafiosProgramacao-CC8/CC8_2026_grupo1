@@ -5,39 +5,38 @@
 {% block conteudo %}
 <div class="{{ 'max-w-6xl' if tipo == 'imagem' else 'max-w-3xl' }} mx-auto my-6 px-4">
     <form action="{{ url_for('buscar') }}" method="get" class="flex flex-row items-center gap-4 mb-4">
-        <a href="{{ url_for('home') }}" class="text-[22px] font-bold text-blue-600 whitespace-nowrap">IFFagle</a>
         <input type="text" name="q" value="{{ termo }}"
-               class="flex-1 px-5 py-2.5 border border-gray-200 rounded-full outline-none focus:shadow-md focus:border-gray-200"
+               class="flex-1 px-6 py-3 text-lg border border-gray-200 rounded-full outline-none focus:shadow-md focus:border-gray-200 dark:bg-google-superficie dark:border-google-borda dark:text-google-texto dark:placeholder-google-apagado"
                required>
         <input type="hidden" name="tipo" value="{{ tipo }}">
         <button type="submit"
-                class="bg-gray-100 border border-gray-100 rounded px-3.5 py-2 text-sm text-gray-700 hover:border-gray-300">
+                class="bg-gray-100 border border-gray-100 rounded px-3.5 py-2 text-sm text-gray-700 hover:border-gray-300 dark:bg-google-superficie dark:border-google-superficie dark:text-google-texto dark:hover:border-google-borda">
             Pesquisar
         </button>
     </form>
 
-    <div class="flex gap-5 border-b border-gray-200 mb-4 text-sm">
+    <div class="flex gap-5 border-b border-gray-200 dark:border-google-borda mb-4 text-sm">
         <a href="{{ url_for('buscar', q=termo, tipo='todos') }}"
-           class="py-2 px-1 {{ 'text-blue-600 border-b-2 border-blue-600' if tipo == 'todos' else 'text-gray-600' }}">Tudo</a>
+           class="py-2 px-1 {{ 'text-blue-600 dark:text-google-link border-b-2 border-blue-600 dark:border-google-link' if tipo == 'todos' else 'text-gray-600 dark:text-google-apagado' }}">Tudo</a>
         <a href="{{ url_for('buscar', q=termo, tipo='imagem') }}"
-           class="py-2 px-1 {{ 'text-blue-600 border-b-2 border-blue-600' if tipo == 'imagem' else 'text-gray-600' }}">Imagens</a>
+           class="py-2 px-1 {{ 'text-blue-600 dark:text-google-link border-b-2 border-blue-600 dark:border-google-link' if tipo == 'imagem' else 'text-gray-600 dark:text-google-apagado' }}">Imagens</a>
         <a href="{{ url_for('buscar', q=termo, tipo='documento') }}"
-           class="py-2 px-1 {{ 'text-blue-600 border-b-2 border-blue-600' if tipo == 'documento' else 'text-gray-600' }}">Documentos</a>
+           class="py-2 px-1 {{ 'text-blue-600 dark:text-google-link border-b-2 border-blue-600 dark:border-google-link' if tipo == 'documento' else 'text-gray-600 dark:text-google-apagado' }}">Documentos</a>
     </div>
 
     {% if erro %}
-        <div class="mb-2 rounded px-4 py-2.5 text-sm border bg-red-50 text-red-700 border-red-200">{{ erro }}</div>
+        <div class="mb-2 rounded px-4 py-2.5 text-sm border bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-900">{{ erro }}</div>
     {% elif not resultados %}
-        <p class="text-gray-600">Nenhum resultado encontrado para "<strong>{{ termo }}</strong>".</p>
+        <p class="text-gray-600 dark:text-google-apagado">Nenhum resultado encontrado para "<strong>{{ termo }}</strong>".</p>
     {% else %}
-        <p class="text-[13px] text-gray-600 mb-4">{{ resultados|length }} resultado(s) para "{{ termo }}"</p>
+        <p class="text-[13px] text-gray-600 dark:text-google-apagado mb-4">{{ resultados|length }} resultado(s) para "{{ termo }}"</p>
 
         {% if tipo == 'imagem' %}
             <div class="flex flex-wrap gap-2">
                 {% for r in resultados %}
                     {% set proporcao = (r.metadados.largura / r.metadados.altura) if r.metadados.largura and r.metadados.altura else 1.4 %}
                     {% set url_imagem = url_for('abrir_arquivo', caminho=r.caminho) %}
-                    <figure class="relative group h-44 rounded overflow-hidden bg-gray-100 cursor-zoom-in"
+                    <figure class="relative group h-44 rounded overflow-hidden bg-gray-100 dark:bg-google-superficie cursor-zoom-in"
                             style="flex: {{ (proporcao * 100) | round | int }} 1 {{ (proporcao * 176) | round | int }}px;"
                             data-imagem="{{ url_imagem }}"
                             data-nome="{{ r.nome }}"
@@ -60,18 +59,18 @@
             <div id="visualizador"
                  class="hidden fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 md:p-8"
                  onclick="fecharVisualizador(event)">
-                <div class="bg-white rounded-lg overflow-hidden flex flex-col md:flex-row max-w-5xl w-full max-h-[85vh]">
+                <div class="bg-white dark:bg-google-superficie dark:text-google-texto rounded-lg overflow-hidden flex flex-col md:flex-row max-w-5xl w-full max-h-[85vh]">
                     <div class="flex-1 bg-black flex items-center justify-center min-h-[200px]">
                         <img id="visualizador-imagem" src="" alt="" class="max-h-[85vh] max-w-full object-contain">
                     </div>
                     <div class="w-full md:w-72 shrink-0 p-4 text-sm overflow-y-auto">
                         <p id="visualizador-nome" class="font-medium break-words"></p>
-                        <p id="visualizador-caminho" class="text-[11px] text-green-700 break-all mt-1"></p>
-                        <p id="visualizador-info" class="text-gray-600 mt-3"></p>
+                        <p id="visualizador-caminho" class="text-[11px] text-green-700 dark:text-google-verde break-all mt-1"></p>
+                        <p id="visualizador-info" class="text-gray-600 dark:text-google-apagado mt-3"></p>
                         <a id="visualizador-link" href="#" target="_blank"
-                           class="inline-block mt-4 text-blue-600 hover:underline">Abrir arquivo original</a>
+                           class="inline-block mt-4 text-blue-600 dark:text-google-link hover:underline">Abrir arquivo original</a>
                         <button type="button" onclick="fecharVisualizador()"
-                                class="block mt-2 text-gray-500 hover:underline">Fechar (Esc)</button>
+                                class="block mt-2 text-gray-500 dark:text-google-apagado hover:underline">Fechar (Esc)</button>
                     </div>
                 </div>
             </div>
@@ -103,13 +102,13 @@
                 {% for r in resultados %}
                     <li>
                         <a href="{{ url_for('abrir_arquivo', caminho=r.caminho) }}" target="_blank"
-                           class="text-lg text-blue-600 hover:underline">
+                           class="text-lg text-blue-600 dark:text-google-link hover:underline">
                             {{ r.nome }}
                         </a>
-                        <div class="text-[13px] text-green-700 my-0.5">{{ r.caminho }}</div>
+                        <div class="text-[13px] text-green-700 dark:text-google-verde my-0.5">{{ r.caminho }}</div>
 
                         {% if r.tipo == "imagem" %}
-                            <div class="text-sm text-gray-600">
+                            <div class="text-sm text-gray-600 dark:text-google-apagado">
                                 {% if r.metadados.largura %}
                                     {{ r.metadados.largura }}x{{ r.metadados.altura }} px &middot;
                                 {% endif %}
@@ -117,20 +116,20 @@
                                 {{ (r.tamanho_bytes / 1024) | round(1) }} KB
                             </div>
                         {% else %}
-                            <div class="text-sm text-gray-600">
+                            <div class="text-sm text-gray-600 dark:text-google-apagado">
                                 {{ r.metadados.trecho or "" }}...
                             </div>
                             {% if r.metadados.palavras_comuns %}
-                                <div class="text-[11px] text-gray-500 mt-1">
+                                <div class="text-[11px] text-gray-500 dark:text-google-apagado mt-1">
                                     Palavras mais comuns:
                                     {% for palavra, quantidade in r.metadados.palavras_comuns[:5] %}
-                                        <span class="inline-block bg-gray-100 rounded px-1.5 py-0.5 ml-0.5">{{ palavra }} ({{ quantidade }})</span>
+                                        <span class="inline-block bg-gray-100 dark:bg-google-superficie rounded px-1.5 py-0.5 ml-0.5">{{ palavra }} ({{ quantidade }})</span>
                                     {% endfor %}
                                 </div>
                             {% endif %}
                         {% endif %}
 
-                        <div class="text-[11px] text-gray-400 mt-0.5">relevância: {{ "%.2f"|format(r.relevancia) }}</div>
+                        <div class="text-[11px] text-gray-400 dark:text-google-apagado mt-0.5">relevância: {{ "%.2f"|format(r.relevancia) }}</div>
                     </li>
                 {% endfor %}
             </ul>

@@ -1,7 +1,34 @@
 import os
 from datetime import datetime
 from typing import Any, Dict
-from PIL import Image
+from PIL import Image, ImageChops
+
+MODOS_PRETO_E_BRANCO = {"1", "L", "LA", "I", "F"}
+TOLERANCIA_CINZA = 16
+
+def _e_tons_de_cinza(img) -> bool:
+    if img.mode in MODOS_PRETO_E_BRANCO:
+        return True
+    try:
+        img.draft("RGB", (128, 128))
+    except Exception:
+        pass
+
+    amostra = img.convert("RGB")
+    amostra.thumbnail((128, 128))
+    r, g, b = amostra.split()
+
+    return max(
+        ImageChops.difference(r, g).getextrema()[1],
+        ImageChops.difference(g, b).getextrema()[1],
+        ImageChops.difference(r, b).getextrema()[1],
+    ) <= TOLERANCIA_CINZA
+
+def _tons_de_cinza(metadados: Dict[str, Any]) -> bool:
+    valor = metadados.get("tons_de_cinza")
+    if valor is None:
+        return metadados.get("modo_cor") in MODOS_PRETO_E_BRANCO
+    return valor
 
 
 def extrair_metadados(caminho: str) -> Dict[str, Any]:
@@ -13,6 +40,7 @@ def extrair_metadados(caminho: str) -> Dict[str, Any]:
         "altura": None,
         "formato": None,
         "modo_cor": None,
+        "tons_de_cinza": None,
     }
 
     try:
@@ -20,6 +48,7 @@ def extrair_metadados(caminho: str) -> Dict[str, Any]:
             metadados["largura"], metadados["altura"] = img.size
             metadados["formato"] = img.format
             metadados["modo_cor"] = img.mode
+            metadados["tons_de_cinza"] = _e_tons_de_cinza(img)
     except Exception as e:
         print(f"[image_extractor] Não foi possível ler metadados de '{caminho}': {e}")
 
@@ -61,9 +90,7 @@ def gerar_termos_busca(metadados: Dict[str, Any]):
         termos.append(modo_cor.lower())
 
         #imagem em tons de cinza / preto e branco
-        MODOS_PRETO_E_BRANCO = {"1", "L", "LA", "I", "F"}
-
-        if modo_cor in MODOS_PRETO_E_BRANCO:
+        if _tons_de_cinza(metadados):
             termos.extend(["preta", "branca", "pb", "bw", "cinza", "grayscale"])
         else:
             termos.extend(["colorida", "cor", "color"])
@@ -127,8 +154,7 @@ def gerar_termos_por_campo(metadados: Dict[str, Any]):
 
     modo_cor = metadados.get("modo_cor")
     if modo_cor:
-        MODOS_PRETO_E_BRANCO = {"1", "L", "LA", "I", "F"}
-        campos.append(("cor", "pb" if modo_cor in MODOS_PRETO_E_BRANCO else "colorida"))
+        campos.append(("cor", "pb" if _tons_de_cinza(metadados) else "colorida"))
 
     tamanho_bytes = metadados.get("tamanho_bytes")
     if tamanho_bytes is not None:
