@@ -112,11 +112,7 @@ iffagle/
 └── T1.pdf
 ```
 
-## Como o sistema funciona
-
-<!-- diagrama: fluxo de indexação e busca -->
-
-### Casos de uso
+## Como o sistema funciona (Diagrama de Caso de Uso)
 
 ![Diagrama de casos de uso do IFFagle](static/diagrama.svg)
 
