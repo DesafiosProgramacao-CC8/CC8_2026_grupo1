@@ -2,7 +2,7 @@
 
 - Cauã Felipe Ziotti Tamiozzo
 - Diego Breskovit Morcelli
-- Talita Vargas de Souza 
+- Talita Vargas de Souza
 
 ## Estruturas de dados utilizadas
 
@@ -36,26 +36,26 @@ tipo:jpg orientacao:vertical      sem resultados se nenhuma jpg for vertical
 
 > Códigos usados na busca por metadados
 
-| Campo | Valores Possíveis | O Que Representa |
-| :--- | :---: | :--- |
-| `tipo` | `jpg`, `jpeg`, `png` | Formato / extensão do arquivo de imagem |
-| `orientacao` | `horizontal`, `vertical`, `quadrada` | Orientação espacial da imagem (largura vs. altura) |
-| `cor` | `colorida`, `pb` | Identificação do espaço de cor (colorida ou tons de cinza / preto e branco) |
-| `tamanho` | `grande`, `media`, `pequena` | Classificação por resolução:<br>• **Grande:** maior lado $\ge$ 1920px<br>• **Pequena:** maior lado $\le$ 400px<br>• **Média:** valores intermediários |
-| `peso` | `leve`, `moderada`, `pesada` | Tamanho do arquivo em disco:<br>• **Leve:** $< 100\text{ KB}$<br>• **Moderada:** $100\text{ KB} - 2\text{ MB}$<br>• **Pesada:** $> 2\text{ MB}$ |
-| `ano` | Ex: `2024`, `2025`, `2026` | Ano da ultima modificacao registrada no arquivo |
+| Campo        | Valores                              | Descrição                                          |
+| :----------- | :----------------------------------- | :------------------------------------------------- |
+| `tipo`       | `jpg`, `jpeg`, `png`                 | Formato do arquivo                                 |
+| `orientacao` | `horizontal`, `vertical`, `quadrada` | Largura vs. altura                                 |
+| `cor`        | `colorida`, `pb`                     | Tem cor ou é tons de cinza                         |
+| `tamanho`    | `grande`, `media`, `pequena`         | Resolução: ≥ 1920px / entre / ≤ 400px (maior lado) |
+| `peso`       | `leve`, `moderada`, `pesada`         | Arquivo: < 100 KB / entre / > 2 MB                 |
+| `ano`        | `2024`, `2025`, ...                  | Ano da última modificação                          |
 
 > Termos de busca por metadados em busca livre
 
-| Metadado | Termos que Caem na Busca Livre |
-| :--- | :--- |
-| `formato` | `jpeg`, `png` *(nome do formato reportado pelo Pillow, sempre em minúsculo)* |
-| `dimensões` | • `{largura}x{altura}` (ex: `1920x1080`)<br>• Largura isolada (ex: `1920`)<br>• Altura isolada (ex: `1080`) |
-| `orientação` | • `paisagem`, `horizontal` *(se largura > altura)*<br>• `retrato`, `vertical` *(se altura > largura)*<br>• `quadrada` *(se largura == altura)* |
-| `porte` *(resolução)* | • `grande` *(maior lado $\ge$ 1920px)*<br>• `media` *(maior lado entre 400px e 1920px)*<br>• `pequena` *(maior lado $\le$ 400px)* |
-| `cor` | • Modo Pillow cru: `rgb`, `rgba`, `l`, `cmyk`, etc.<br>• Se P&B / cinza: `preta`, `branca`, `pb`, `bw`, `cinza`, `grayscale`<br>• Se colorida: `colorida`, `cor`, `color` |
-| `peso do arquivo` | • `leve` *(menor que 100 KB)*<br>• `moderada` *(entre 100 KB e 2 MB)*<br>• `pesada` *(maior que 2 MB)* |
-| `ano de modificação` | Ano numérico puro (ex: `2024`, `2025`, `2026`) |
+| Metadado   | Termos aceitos                                                               |
+| :--------- | :--------------------------------------------------------------------------- |
+| Formato    | `jpeg`, `png`                                                                |
+| Dimensões  | `1920x1080`, ou só a largura (`1920`) ou a altura (`1080`)                   |
+| Orientação | `paisagem`/`horizontal`, `retrato`/`vertical`, `quadrada`                    |
+| Resolução  | `grande` (≥ 1920px), `media`, `pequena` (≤ 400px)                            |
+| Cor        | `colorida`/`cor`/`color`, ou `pb`/`preta`/`branca`/`cinza`/`bw`/`grayscale`; |
+| Peso       | `leve` (< 100 KB), `moderada`, `pesada` (> 2 MB)                             |
+| Ano        | `2024`, `2025`, ...                                                          |
 
 Os filtros por campo (`tipo:`, `orientacao:`, …) são os mais previsíveis, porque
 cada valor é único. Os termos livres são mais soltos: casam por prefixo e
@@ -64,6 +64,7 @@ convivem com as palavras do nome do arquivo.
 ## To-do list
 
 ### Feito
+
 - [x] Seleção da pasta pelo usuário e varredura recursiva de subpastas
 - [x] Identificação dos arquivos por extensão
 - [x] Armazenamento das informações de cada arquivo (nome, caminho, tipo, tamanho, metadados)
@@ -85,4 +86,5 @@ convivem com as palavras do nome do arquivo.
 - [x] Contador conta também os arquivos ignorados
 
 ### Pendentes
+
 - [ ] Relatório/documentação de todas as partes
