@@ -1,7 +1,0 @@
-Relatorio de estoque do almoxarifado.
-
-O estoque de canetas esta abaixo do minimo. O estoque de cadernos esta
-regular. Foi identificada divergencia no estoque de papel A4 entre o
-sistema e a contagem fisica.
-
-Providencia: realizar nova contagem do estoque e corrigir o sistema.
