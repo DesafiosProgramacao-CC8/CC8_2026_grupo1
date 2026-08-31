@@ -1,0 +1,9 @@
+Relatorio de vendas do primeiro trimestre.
+
+As vendas cresceram 12% em relacao ao trimestre anterior. O setor de
+papelaria concentrou a maior parte das vendas, seguido pelo setor de
+informatica. As vendas online ainda representam uma fatia pequena, mas
+vem crescendo mes a mes.
+
+Recomendacao: ampliar o estoque dos produtos de papelaria antes do
+proximo periodo de vendas.
