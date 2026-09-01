@@ -43,18 +43,15 @@ construída pelo grupo. A partir daí, toda pesquisa consulta apenas a árvore: 
 
 ## Como executar
 
+O projeto usa o [UV](https://docs.astral.sh/uv/). Depois de instalado, navegue até `Trabalho1/`:
+
 ```bash
-# 1. ambiente virtual
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-source .venv/bin/activate     # Linux / macOS
-
-# 2. dependências
-pip install -r requirements.txt
-
-# 3. servidor
-python app.py                 # http://127.0.0.1:5000
+uv run python app.py          # http://127.0.0.1:5000
 ```
+
+> O `uv run` já cria o ambiente virtual, baixa o Python 3.14 e instala as
+> dependências travadas no `uv.lock`. Não é preciso `venv` nem `pip`.
+> Para instalar sem executar nada, use `uv sync`.
 
 Com a aplicação no ar:
 
@@ -76,7 +73,8 @@ Com a aplicação no ar:
 | :--------------------- | :--------------------------------------------------------------- |
 | **Python 3.14**        | Linguagem base; toda a indexação e busca usa a biblioteca padrão |
 | **Flask 3.0.3**        | Servidor web e rotas                                             |
-| **Pillow 10.4.0**      | Leitura dos metadados das imagens e detecção de tons de cinza    |
+| **Pillow 12**          | Leitura dos metadados das imagens e detecção de tons de cinza    |
+| **uv**                 | Gerenciador de ambiente e dependências (`pyproject.toml` + `uv.lock`) |
 | **Tailwind CSS** (CDN) | Estilo da interface, incluindo o tema claro/escuro               |
 | **pickle**             | Persistência do índice em disco                                  |
 
@@ -108,7 +106,6 @@ iffagle/
 ├── static/
 │   └── logo.svg
 ├── pasta_teste/
-├── requirements.txt
 └── T1.pdf
 ```
 

@@ -1,0 +1,9 @@
+[project]
+name = "iffagle"
+version = "0.1.0"
+description = "Indexador e buscador de arquivos locais com Trie"
+requires-python = ">=3.12"
+dependencies = [
+    "Flask==3.0.3",
+    "Pillow>=11.0.0",
+]
