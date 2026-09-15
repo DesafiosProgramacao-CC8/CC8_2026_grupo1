@@ -1,4 +1,4 @@
-from src.banco import Banco
+from iffarql.banco import Banco
 
 def executar_linha(bd: Banco, linha: str) -> str:
     ...
