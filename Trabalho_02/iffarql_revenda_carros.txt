@@ -1,0 +1,51 @@
+CRIATABELA cliente ( nome TEXTO cpf TEXTO telefone TEXTO data_cadastro DATA ativo BOOLEANO )
+CRIATABELA vendedor ( nome TEXTO cpf TEXTO telefone TEXTO comissao DECIMAL ativo BOOLEANO )
+CRIATABELA carro ( marca TEXTO modelo TEXTO ano INTEIRO cor TEXTO quilometragem INTEIRO preco DECIMAL disponivel BOOLEANO )
+CRIATABELA caixa ( idCarro INTEIRO CHAVESTRANGEIRA carro idCliente INTEIRO CHAVESTRANGEIRA cliente idVendedor INTEIRO CHAVESTRANGEIRA vendedor valorVenda DECIMAL dataVenda DATA )
+
+INSERIREM cliente VALOR ("Joao da Silva" "12345678900" "55999999999" "10/01/2026" true)
+INSERIREM cliente VALOR ("Maria Oliveira" "98765432100" "55988888888" "15/01/2026" true)
+INSERIREM cliente VALOR ("Carlos Souza" "45678912300" "55977777777" "20/01/2026" true)
+INSERIREM cliente VALOR ("Ana Costa" "32165498700" "55966666666" "25/01/2026" false)
+
+INSERIREM vendedor VALOR ("Pedro Santos" "11122233344" "55991111111" 5.0 true)
+INSERIREM vendedor VALOR ("Lucas Martins" "22233344455" "55992222222" 4.5 true)
+INSERIREM vendedor VALOR ("Fernanda Alves" "33344455566" "55993333333" 6.0 true)
+
+INSERIREM carro VALOR ("Chevrolet" "Onix" 2018 "Vermelho" 85000 54990.00 true)
+INSERIREM carro VALOR ("Fiat" "Argo" 2020 "Branco" 62000 64990.00 true)
+INSERIREM carro VALOR ("Volkswagen" "T-Cross" 2022 "Cinza" 35000 119990.00 true)
+INSERIREM carro VALOR ("Toyota" "Corolla" 2021 "Prata" 42000 124990.00 true)
+INSERIREM carro VALOR ("Hyundai" "HB20" 2019 "Preto" 71000 59990.00 true)
+INSERIREM carro VALOR ("Honda" "Civic" 2020 "Azul" 48000 109990.00 true)
+INSERIREM carro VALOR ("Renault" "Kwid" 2023 "Branco" 18000 58990.00 true)
+INSERIREM carro VALOR ("Jeep" "Renegade" 2021 "Preto" 51000 99990.00 true)
+
+INSERIREM caixa VALOR (1 1 1 54990.00 "05/02/2026")
+INSERIREM caixa VALOR (2 2 2 64990.00 "10/02/2026")
+INSERIREM caixa VALOR (3 3 1 119990.00 "18/02/2026")
+INSERIREM caixa VALOR (5 4 3 59990.00 "25/02/2026")
+
+ATUALIZATABELA carro COM disponivel = false ONDE id == 1
+ATUALIZATABELA carro COM disponivel = false ONDE id == 2
+ATUALIZATABELA carro COM disponivel = false ONDE id == 3
+ATUALIZATABELA carro COM disponivel = false ONDE id == 5
+
+MOSTRADADOSDE cliente
+MOSTRADADOSDE vendedor
+MOSTRADADOSDE carro
+MOSTRADADOSDE caixa
+
+MOSTRADADOSDE carro ONDE preco < 70000
+MOSTRADADOSDE carro ONDE ano >= 2020
+MOSTRADADOSDE carro ONDE quilometragem < 50000
+MOSTRADADOSDE carro ONDE disponivel == true
+
+MOSTRADADOSDE cliente ONDE ativo == true
+MOSTRADADOSDE vendedor ONDE comissao >= 5.0
+MOSTRADADOSDE caixa ONDE valorVenda > 60000
+
+ATUALIZATABELA carro COM preco = preco - 1000 ONDE preco > 100000
+ATUALIZATABELA vendedor COM comissao = comissao + 0.5 ONDE ativo == true
+
+MOSTRADADOSDE carro ONDE preco >= 100000
