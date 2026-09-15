@@ -1,0 +1,6 @@
+[project]
+name = "iffarql"
+version = "0.1.0"
+description = "SGBD simplificado em terminal com IFFARQL"
+requires-python = ">=3.12"
+dependencies = []
