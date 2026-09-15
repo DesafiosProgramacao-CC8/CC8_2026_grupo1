@@ -1,12 +1,12 @@
 import os
 import tempfile
 
-from src.arvore import Arvore
-from src.banco import Banco
-from src.comandos import interpretar
-from src.erros import ErroIffarql
-from src.lexer import tokenizar
-from src.tipos import Data, Decimal, Inteiro, Texto, obter_tipo
+from iffarql.arvore import Arvore
+from iffarql.banco import Banco
+from iffarql.comandos import interpretar
+from iffarql.erros import ErroIffarql
+from iffarql.lexer import tokenizar
+from iffarql.tipos import Data, Decimal, Inteiro, Texto, obter_tipo
 
 SCRIPT = "iffarql_revenda_carros.txt"
 
