@@ -18,8 +18,12 @@ Esquema = dict[str, Coluna]
 
 
 def criar_esquema(colunas: list[Coluna]) -> Esquema:
-    if "id" in {c.nome for c in colunas}:
+    nomes = [c.nome for c in colunas]
+    if "id" in nomes:
         raise ErroIffarql("o usuario nao pode declarar uma coluna chamada 'id'")
+    repetidas = sorted({n for n in nomes if nomes.count(n) > 1})
+    if repetidas:
+        raise ErroIffarql(f"coluna(s) declarada(s) mais de uma vez: {', '.join(repetidas)}")
     return {c.nome: c for c in colunas}
 
 
@@ -76,3 +80,24 @@ def resolver_atribuicao(
         return col.tipo.operar(registro[coluna], op, operando)
 
     raise ErroIffarql(f"expressao de atribuicao invalida: {tokens_valor!r}")
+
+
+@dataclass(frozen=True)
+class Condicao:
+
+    coluna: str
+    operador: str
+    valor_bruto: str
+
+    def avaliar(self, registro: dict, esquema: Esquema) -> bool:
+        return avaliar_condicao(registro, esquema, self.coluna, self.operador, self.valor_bruto)
+
+
+@dataclass(frozen=True)
+class Atribuicao:
+
+    coluna: str
+    termos: tuple[str, ...] 
+
+    def novo_valor(self, registro: dict, esquema: Esquema):
+        return resolver_atribuicao(registro, esquema, self.coluna, list(self.termos))

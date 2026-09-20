@@ -31,6 +31,14 @@ def _tirar_aspas(bruto: str) -> str:
     return texto
 
 
+def _exigir_aspas(bruto: str, nome_tipo: str) -> str:
+    #conteudo entre aspas, erro se o valor nao vier entre aspas
+    texto = bruto.strip()
+    if len(texto) < 2 or texto[0] != '"' or texto[-1] != '"':
+        raise ErroIffarql(f"valor '{bruto}' precisa estar entre aspas para o tipo {nome_tipo}")
+    return texto[1:-1]
+
+
 class Tipo:
     nome = ""
     operadores_aritmeticos: frozenset[str] = frozenset()
@@ -135,7 +143,7 @@ class Texto(Tipo):
     operadores_aritmeticos = frozenset({"+"})  # concatenação
 
     def converter(self, bruto: str) -> str:
-        texto = _tirar_aspas(bruto)
+        texto = _exigir_aspas(bruto, self.nome)
         return texto.translate(_TRADUCAO_ACENTOS)
 
     def _operar(self, a: str, op: str, b: str) -> str:
@@ -159,6 +167,10 @@ def _de_serial(serial: int) -> tuple[int, int, int]:
     return resto + 1, mes, ano
 
 
+_SERIAL_MIN = _serial(1, 1, 1)  # 01/01/0001
+_SERIAL_MAX = _serial(31, 12, 9999)  # 31/12/9999
+
+
 class Data(Tipo):
 
     nome = "DATA"
@@ -167,7 +179,7 @@ class Data(Tipo):
     _PADRAO = re.compile(r"(\d{2})/(\d{2})/(\d{4})")
 
     def converter(self, bruto: str) -> tuple[int, int, int]:
-        texto = _tirar_aspas(bruto)
+        texto = _exigir_aspas(bruto, self.nome)
         m = self._PADRAO.fullmatch(texto)
         if not m:
             raise ErroIffarql(f"valor '{bruto}' nao e uma DATA valida (dd/mm/aaaa)")
@@ -187,6 +199,8 @@ class Data(Tipo):
     def _operar(self, a: tuple[int, int, int], op: str, b: int):
         serial = _serial(*a)
         serial = serial + b if op == "+" else serial - b
+        if not (_SERIAL_MIN <= serial <= _SERIAL_MAX):
+            raise ErroIffarql("resultado fora do intervalo de datas validas (01/01/0001 a 31/12/9999)")
         return _de_serial(serial)
 
     def _comparar(self, a: tuple[int, int, int], op: str, b: tuple[int, int, int]) -> bool:
