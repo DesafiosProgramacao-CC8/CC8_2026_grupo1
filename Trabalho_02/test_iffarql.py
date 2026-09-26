@@ -1,9 +1,13 @@
+# Gerado com auxilio de IA
+# Objetivo: provar que as regras do enunciado valem de ponta a ponta
+# Gerado antes da implementacao, para servir de guia e teste de regressao
+
 import os
 import tempfile
-
+import main
 from iffarql.arvore import Arvore
 from iffarql.banco import Banco
-from iffarql.comandos import interpretar
+from iffarql.comandos import COMANDOS, interpretar
 from iffarql.erros import ErroIffarql
 from iffarql.lexer import tokenizar
 from iffarql.tipos import Data, Decimal, Inteiro, Texto, obter_tipo
@@ -79,10 +83,12 @@ def test_arvore_percorre_em_ordem_de_id():
         a.inserir(i, {"id": i})
     assert [r["id"] for r in a.percorrer()] == [1, 2, 3]
 
-def test_arvore_de_lista_fica_balanceada():
-    """arvore remontada do arquivo fica balanceada, nao vira lista"""
-    a = Arvore.de_lista([{"id": i} for i in range(1, 8)])
-    assert a.raiz.chave == 4
+def test_arvore_de_lista_remonta_do_arquivo():
+    """arvore remontada do arquivo nao depende da ordem dos ids"""
+    a = Arvore.de_lista([{"id": i} for i in (7, 1, 500, 42)])
+    assert [r["id"] for r in a.percorrer()] == [1, 7, 42, 500]
+    assert a.buscar(500) == {"id": 500}
+    assert erro(a.inserir, 7, {"id": 7})
 
 def banco_com_script():
     bd = Banco()
@@ -142,16 +148,51 @@ def test_carregariffarql_e_atomico():
     assert erro(interpretar(f"CARREGARIFFARQL {caminho}").executar, bd)
     os.unlink(caminho)
 
-
 def test_salvar_e_carregar_preserva_proximo_id():
     """SALVARBD/CARREGARBD preservam o proximo id"""
     bd = banco_com_script()
-    interpretar("APAGADADOSDE cliente ONDE id == 4").executar(bd)
+    interpretar("APAGADADOSDE caixa ONDE id == 4").executar(bd)  # ninguem referencia caixa
     caminho = os.path.join(tempfile.gettempdir(), "bd_teste.json")
     interpretar(f"SALVARBD {caminho}").executar(bd)
 
     novo = Banco()
     interpretar(f"CARREGARBD {caminho}").executar(novo)
-    assert len(novo.obter("cliente").selecionar(None)) == 3
+    assert len(novo.obter("caixa").selecionar(None)) == 3
+    assert novo.obter("caixa").proximo_id == 5  # nunca decrementa
+    assert erro(interpretar(f"CARREGARBD {caminho}").executar, novo)  # ja tem tabela
     os.unlink(caminho)
 
+def test_aspas_nao_fechadas():
+    """aspas nao fechadas viram aviso, nao travam o terminal"""
+    assert erro(tokenizar, 'INSERIREM t VALOR ("sem fim)')
+
+def test_comando_inexistente():
+    """palavra reservada desconhecida vira aviso"""
+    assert erro(interpretar, "SELECT * FROM carro")
+    assert erro(interpretar, "mostradadosde carro")  # comando e sempre caixa alta
+
+def test_comando_incompleto():
+    """comando sem as partes obrigatorias vira aviso"""
+    assert erro(interpretar, "INSERIREM carro 2018 true")  # sem VALOR ( )
+    assert erro(interpretar, "MOSTRADADOSDE carro ONDE preco")  # ONDE incompleto
+    assert erro(interpretar, "CRIATABELA t ( nome )")  # coluna sem tipo
+
+def test_atualiza_com_varios_com():
+    """ATUALIZATABELA aceita varios COM no mesmo comando"""
+    bd = banco_com_script()
+    interpretar(
+        'ATUALIZATABELA carro COM cor = "Verde" COM preco = preco + 500 ONDE id == 7'
+    ).executar(bd)
+    carro = bd.obter("carro").arvore.buscar(7)
+    assert carro["cor"] == "Verde" and carro["preco"] == 59490.00
+
+def test_executar_linha_reverte_comando_que_falha():
+    """comando que falha no meio nao deixa alteracao pela metade"""
+    bd = banco_com_script()
+    antes = [dict(r) for r in bd.obter("caixa").selecionar(None)]
+    # o primeiro COM e valido, o segundo aponta para um carro que nao existe
+    assert erro(
+        main.executar_linha, bd,
+        "ATUALIZATABELA caixa COM valorVenda = 1.0 COM idCarro = 999",
+    )
+    assert [dict(r) for r in bd.obter("caixa").selecionar(None)] == antes
