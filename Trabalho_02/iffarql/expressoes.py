@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-
 from iffarql.erros import ErroIffarql
 from iffarql.tipos import TODOS_COMPARADORES, Tipo
 

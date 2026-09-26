@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from iffarql.arvore import Arvore
 from iffarql.erros import ErroIffarql
 from iffarql.expressoes import Atribuicao, Coluna, Condicao, criar_esquema, montar_registro

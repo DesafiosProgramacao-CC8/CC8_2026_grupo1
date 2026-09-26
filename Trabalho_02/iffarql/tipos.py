@@ -1,8 +1,5 @@
-from __future__ import annotations
-
 import operator as _op
 import re
-
 from iffarql.erros import ErroIffarql
 
 _ARITMETICOS = {
