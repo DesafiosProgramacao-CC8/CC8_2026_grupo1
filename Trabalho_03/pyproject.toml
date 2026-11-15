@@ -1,0 +1,18 @@
+[project]
+name = "iffarchat"
+version = "0.1.0"
+description = "Chat cliente/servidor sobre TCP com persistência em IFFARQL"
+requires-python = ">=3.12"
+dependencies = ["iffarql"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-sugar>=1.1.1",
+]
+
+[tool.pytest.ini_options]
+addopts = "-v"
+
+[tool.uv.sources]
+iffarql = { path = "../Trabalho_02", editable = true }
