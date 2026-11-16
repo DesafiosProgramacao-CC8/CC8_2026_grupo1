@@ -4,7 +4,76 @@
 
 <!-- Tecnologias (entregável 2): parte do B. -->
 
-<!-- Hash da senha (entregável 3): parte do C. -->
+## Hash da senha
+
+A senha nunca viaja em texto puro: o cliente calcula um hash e envia só o
+resultado. O servidor guarda e compara essa string sem saber como ela foi
+gerada. Dos algoritmos permitidos pelo enunciado, escolhemos o **FNV-1a de 32
+bits** (Fowler–Noll–Vo), porque é o mais curto de todos: duas operações por
+byte, sem tabelas nem rotações, o que torna fácil mostrar o cálculo passo a
+passo. A implementação está em `senha.py`, sem nenhuma biblioteca de hash.
+
+### Algoritmo
+
+```
+h = 0x811C9DC5                    # valor inicial ("offset basis")
+para cada byte b da senha em UTF-8:
+    h = h XOR b                   # 1. mistura o byte nos bits baixos
+    h = (h * 0x01000193) mod 2^32 # 2. espalha para os bits altos (primo do FNV)
+resultado = h em 8 dígitos hexadecimais
+```
+
+O "1a" no nome indica a ordem das operações: XOR primeiro, multiplicação
+depois (no FNV-1 original é o contrário). Essa ordem melhora a dispersão para
+entradas pequenas, como senhas de 6 caracteres. O `mod 2^32` é feito com uma
+máscara (`& 0xFFFFFFFF`), porque o Python não limita o tamanho dos inteiros.
+
+### Exemplo passo a passo: `abc123`
+
+| byte | caractere | h após XOR | h após × primo |
+| ---: | :-------: | :--------- | :------------- |
+|   97 |    `a`    | `811c9da4` | `e40c292c`     |
+|   98 |    `b`    | `e40c294e` | `4d2505ca`     |
+|   99 |    `c`    | `4d2505a9` | `1a47e90b`     |
+|   49 |    `1`    | `1a47e93a` | `9934264e`     |
+|   50 |    `2`    | `9934267c` | `a9189534`     |
+|   51 |    `3`    | `a9189507` | `38b29a05`     |
+
+Resultado: `abc123` → **`38b29a05`**. É isso que vai no campo senha do
+`REGISTRAR` e do `AUTENTICAR`. Rodar `python senha.py` imprime essa tabela.
+
+Mais exemplos de entrada e saída:
+
+| Entrada  | Saída      | Observação                                              |
+| :------- | :--------- | :------------------------------------------------------ |
+| `abc123` | `38b29a05` |                                                         |
+| `abc124` | `31b28f00` | um byte diferente muda a saída inteira                  |
+| `senha1` | `94c7098d` |                                                         |
+| `Senha1` | `5d55b62d` | maiúscula e minúscula são bytes diferentes              |
+| `""`     | `811c9dc5` | nenhum byte: sai o valor inicial (vetor oficial)        |
+| `a`      | `e40c292c` | vetor oficial                                           |
+| `foobar` | `bf9cf968` | vetor oficial                                           |
+
+As três últimas linhas são os vetores de teste publicados pelos autores do
+FNV. Como não existe FNV-1a na biblioteca padrão do Python para servir de
+"biblioteca de referência", são esses vetores que fazem a comparação:
+`senha.py` termina com uma auto-checagem deles e `test_senha.py` os verifica.
+
+### Regras em volta do hash
+
+- **Formato na rede:** 8 dígitos hexadecimais minúsculos. O enunciado mostra
+  `AAAArgAKAg==` (Base64) só como ilustração; como o servidor apenas compara
+  strings, qualquer formato funciona.
+- **Senha exigida no cadastro:** exatamente 6 caracteres alfanuméricos ASCII
+  (`senha_valida`). No login o cliente não valida: envia o hash do que foi
+  digitado, para conseguir entrar em servidores de outros grupos que tenham
+  aceitado outra regra no cadastro.
+- **Onde é calculado:** só no cliente, antes de enviar. O servidor nunca vê a
+  senha original. `ATUALIZARPERFIL` manda o mesmo hash para confirmar a
+  identidade; a senha não muda.
+- **Não é criptografia:** FNV-1a foi feito para tabelas hash, não para
+  senhas. Em 32 bits há só 4 bilhões de saídas e nenhum sal. Atende ao
+  propósito didático do trabalho, não a um sistema real.
 
 ## Banco de dados
 
@@ -100,11 +169,246 @@ o arquivo a cada verificação deixaria a fila lenta para todos.
 Os testes em `test_dados.py` verificam essas garantias, entre elas com 20 threads
 concorrentes atualizando o mesmo dado sem perder nenhuma atualização.
 
-<!-- Telas do programa (entregável 5): parte do C. -->
+## Cliente e telas do programa
+
+O cliente (`cliente.py`) roda no terminal e só usa a biblioteca padrão.
+Para iniciar:
+
+```
+uv run python cliente.py            # host padrão: localhost
+uv run python cliente.py 10.0.0.5   # servidor de outra máquina (porta 42000)
+```
+
+Ele tem três estados: DESCONECTADO, CONECTADO (socket aberto, sem login) e
+LOGADO. Cada estado tem um menu numerado; `0` sempre é a opção de sair do
+estado atual.
+
+**Como ele conversa com o servidor.** O cliente manda um pedido por vez e lê
+quadros até chegar a resposta esperada ou um `32768`. Qualquer outro quadro
+que apareça no meio (um `257` de pedido de amizade, um `259` de resposta ou
+algo que outro grupo tenha inventado) vai para o tratador de notificações e a
+leitura continua. Assim o cliente funciona com servidores que enviam
+notificações por conta própria e com os que só respondem a pedidos. Enquanto
+está logado, uma thread faz as requisições periódicas exigidas pelo enunciado,
+a cada 2 segundos: `128` (notificações) sempre e `1024` (novas mensagens)
+quando há uma conversa aberta. Se o servidor demorar mais de 5 segundos ou
+fechar o socket, o cliente avisa e volta para DESCONECTADO.
+
+Os quadros `256` e `258` não têm resposta de sucesso no enunciado. Para não
+ficar esperando, o cliente os envia seguidos de um `PING`: se um `32768`
+chegar antes do `PONG`, é o erro do pedido; se chegar só o `PONG`, deu certo.
+
+### Desconectado e conectado
+
+```
+=== IFFARCHAT ===
+
+--- DESCONECTADO ---
+1. Conectar
+0. Sair
+> 1
+host [localhost]:
+conectado a localhost:42000
+
+--- CONECTADO ---
+1. Registrar
+2. Entrar
+0. Desconectar
+> 1
+nome completo: Ana Souza
+apelido: ana
+nascimento (DD/MM/AAAA): 10/05/2000
+senha (6 letras ou números):
+registrado! agora use 'Entrar'.
+```
+
+A senha é lida sem eco. Nome, apelido e nascimento são recusados na hora se
+contiverem `|` ou quebra de linha; a senha, se não tiver exatamente 6
+caracteres alfanuméricos.
+
+### Login e menu principal
+
+```
+--- CONECTADO ---
+1. Registrar
+2. Entrar
+0. Desconectar
+> 2
+apelido: ana
+senha:
+bem-vindo, ana (id 1)
+
+[sem notificações]
+
+--- LOGADO como ana ---
+1. Chat geral
+2. Quem está online
+3. Meus amigos
+4. Pedidos de amizade
+5. Adicionar amigo
+6. Conversa privada
+7. Silenciar/dessilenciar amigo
+8. Ver perfil
+9. Editar meu perfil
+0. Logoff
+> 2
+online:
+     2  beto
+```
+
+Senha errada mostra o erro do servidor e volta ao menu:
+
+```
+> 2
+apelido: caio
+senha:
+
+erro do servidor (ERROAUTENTICACAO): Senha invalida
+```
+
+### Notificações
+
+A linha entre colchetes, reimpressa antes de cada menu, é a barra de
+notificações. Ela cobre os dois casos do enunciado: mensagens privadas não
+lidas (quem enviou, sem o conteúdo) e pedidos de amizade aguardando resposta.
+Além disso, mostra uma vez as respostas aos pedidos que o usuário fez.
+
+```
+[novas mensagens: ana | pedidos de amizade: 1]
+```
+
+Quando o servidor envia um `257` ou `259` enquanto o usuário está no menu,
+o aviso aparece na hora, acima do prompt:
+
+```
+--- LOGADO como beto ---
+...
+0. Logoff
+
+[pedido de amizade de ana]
+> 4
+ana quer ser seu amigo. aceitar? [s/n/pular] s
+aceito
+```
+
+Do lado de quem pediu:
+
+```
+> 5
+online:
+     2  beto
+id do usuário (vazio para cancelar): 2
+pedido de amizade enviado para beto
+
+[beto aceitou sua amizade]
+> 3
+amigos:
+     2  beto
+
+[respostas: beto aceitou]
+```
+
+### Conversa privada
+
+Ao abrir uma conversa, o cliente pede o histórico (`4096`) e o mostra; depois
+cada linha digitada vira um `2048`, e as respostas chegam pela verificação
+periódica. `/sair` volta ao menu.
+
+```
+> 6
+amigos:
+     1  ana
+id do amigo (vazio para cancelar): 1
+--- conversa com ana ---
+[15/11/2026 20:48] ana: oi beto!
+(digite /sair para voltar ao menu)
+oi ana, tudo bem?
+[15/11/2026 20:48] eu: oi ana, tudo bem?
+/sair
+```
+
+### Chat geral
+
+Igual à conversa privada, mas sem histórico: só chega o que for enviado
+enquanto o usuário está online.
+
+```
+> 1
+--- chat geral ---
+(digite /sair para voltar ao menu)
+olá geral
+[15/11/2026 20:48] eu: olá geral
+[15/11/2026 20:48] beto: oi geral, sou o beto
+/sair
+```
+
+### Perfil e silenciamento
+
+```
+> 8
+id do usuário [1]: 2
+id: 2
+nome: Beto Lima
+apelido: beto
+idade: 25
+
+> 9
+novo nome completo: Ana Souza Lima
+novo nascimento (DD/MM/AAAA): 10/05/2000
+senha atual (para confirmar):
+perfil atualizado
+
+> 7
+amigos:
+     2  beto
+id do amigo (vazio para cancelar): 2
+silenciamento de beto alterado
+```
+
+### Conexão perdida
+
+Se o servidor cair, a thread de verificação percebe e o cliente volta ao
+estado desconectado, como exige o enunciado:
+
+```
+--- LOGADO como caio ---
+...
+0. Logoff
+
+conexão com o servidor perdida
+(pressione Enter)
+>
+
+--- DESCONECTADO ---
+1. Conectar
+0. Sair
+```
 
 ## Limitações conhecidas
 
-<!-- B e C acrescentam aqui as limitações do servidor e do cliente. -->
+<!-- B acrescenta aqui as limitações do servidor. -->
+
+- **Atraso de até 2 segundos:** notificações e mensagens novas chegam pela
+  verificação periódica. O que o servidor envia por conta própria (`257`,
+  `259`) só é lido quando o cliente faz o próximo pedido.
+- **Chat geral só na tela do chat:** mensagens do chat geral enviadas enquanto
+  o usuário está no menu ficam no servidor e aparecem quando ele entra no chat.
+  O enunciado não define notificação para o chat geral.
+- **Silenciar é "cego":** o `513` não informa se a conversa ficou silenciada
+  ou não. O cliente só confirma que o estado foi invertido.
+- **Pedidos de amizade sem confirmação:** o enunciado não define resposta de
+  sucesso para `256` e `258`. O cliente usa um `PING` em seguida para saber se
+  houve erro.
+- **Hash incompatível entre grupos:** o servidor compara a string do hash. Um
+  usuário cadastrado pelo cliente de um grupo não consegue entrar pelo cliente
+  de outro grupo que use algoritmo ou formato diferente. Vale para todos os
+  grupos.
+- **Sem reconexão automática:** ao perder a conexão o cliente volta ao estado
+  desconectado e o usuário reconecta pelo menu (o enunciado deixa isso como
+  opcional).
+- **Terminal simples:** sem cores nem limpeza de tela. Uma mensagem que chega
+  enquanto o usuário digita aparece na linha de cima do que ele está
+  escrevendo.
 
 - **29 de fevereiro:** o IFFARQL do Trabalho 2 considera fevereiro sempre com 28
   dias. Nascimentos em 29/02 são recusados no cadastro, e mensagens privadas
